@@ -12,14 +12,14 @@ namespace sub
     {
         static void Main(string[] args)
         {
-            var path = _AcquireQueuePath();
+            var queueInfo = _AcquireQueuePath();
 
-            _EnsureQueue(path);
+            _EnsureQueue(queueInfo);
 
             var cancelSource = new CancellationTokenSource();
             var token = cancelSource.Token;
 
-            var task = _DrainQueue(path, token);
+            var task = _DrainQueue(queueInfo.Item1, token);
 
             Console.WriteLine("done. <Enter> to cancel the queue reader.");
             Console.ReadLine();
@@ -30,21 +30,29 @@ namespace sub
             Console.ReadLine();
         }
 
-        private static string _AcquireQueuePath()
+        private static Tuple<string, string> _AcquireQueuePath()
         {
             var path = ConfigurationManager.AppSettings["queuePath"];
+            var multicastAddress = ConfigurationManager.AppSettings["multicastAddress"];
 
             if (path == null)
                 throw new ConfigurationErrorsException("'queuePath' not defined in appsettings.");
+            if (multicastAddress == null)
+                throw new ConfigurationErrorsException("'multicastAddress' not defined in appsettings.");
 
-            return path;
+            return new Tuple<string, string>(path, multicastAddress);
         }
 
-        private static void _EnsureQueue(string path)
+        private static void _EnsureQueue(Tuple<string, string> queueInfo)
         {
-            if (!MessageQueue.Exists(path))
+            if (!MessageQueue.Exists(queueInfo.Item1))
             {
-                MessageQueue.Create(path);
+                
+                using (var queue = MessageQueue.Create(queueInfo.Item1))
+                {
+                    queue.MulticastAddress = queueInfo.Item2;
+                    //queue.Refresh();
+                }
             }
         }
 

@@ -12,14 +12,14 @@ namespace pub
     {
         static void Main(string[] args)
         {
-            var path = _AcquireQueuePath();
+            var queuePath = _AcquireQueuePath();
 
-            _EnsureQueue(path);
+            //_EnsureQueue(path);
 
             var cancelSource = new CancellationTokenSource();
             var token = cancelSource.Token;
 
-            var task = _PopulateQueueAsync(path, token);
+            var task = _PopulateQueueAsync(queuePath, token);
             
             Console.WriteLine("done. <Enter> to cancel the queue writer.");
             Console.ReadLine();
@@ -40,17 +40,9 @@ namespace pub
             return path;
         }
 
-        private static void _EnsureQueue(string path)
+        private static async Task _PopulateQueueAsync(string multicastAddress, CancellationToken token)
         {
-            if (!MessageQueue.Exists(path))
-            {
-                MessageQueue.Create(path);
-            }
-        }
-
-        private static async Task _PopulateQueueAsync(string path, CancellationToken token)
-        {
-            using (var q = new MessageQueue(path, QueueAccessMode.Send))
+            using (var q = new MessageQueue(multicastAddress, QueueAccessMode.Send))
             {
                 if (!q.CanWrite)
                     throw new ApplicationException("Can't write to queue!");
