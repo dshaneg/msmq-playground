@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Configuration;
-using System.IO;
 using System.Messaging;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using domain;
+using messaging;
 
 namespace sub
 {
@@ -51,56 +51,31 @@ namespace sub
                 using (var queue = MessageQueue.Create(queueInfo.Item1))
                 {
                     queue.MulticastAddress = queueInfo.Item2;
-                    //queue.Refresh();
                 }
             }
         }
 
         // returning async void!
-        private static async Task _DrainQueue(string path, CancellationToken token)
+        private static async Task _DrainQueue(string path, CancellationToken cancelToken)
         {
             using (var q = new MessageQueue(path, QueueAccessMode.Receive))
             {
                 if (!q.CanRead)
                     throw new ApplicationException("Can't read from queue!");
 
-                while (!token.IsCancellationRequested)
+                while (!cancelToken.IsCancellationRequested)
                 {
-                    var message = await ReceiveAsync(q, token);
+                    var message = await q.ReceiveAsync(cancelToken);
                     if (message == null)
                         continue;
 
-                    using (var bodyReader = new StreamReader(message.BodyStream))
-                    {
-                        var body = bodyReader.ReadToEnd();
-                        Console.WriteLine(body);
-                    }
+                    var order = message.GetBody<Order>();
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(1), token);
+                    Console.WriteLine(order);
                 }
 
                 Console.WriteLine("Canceled.");
             }
-        }
-
-        public static Task<Message> ReceiveAsync(MessageQueue queue, CancellationToken cancelToken)
-        {
-            return Task<Message>.Factory.StartNew(() => Receive(queue, cancelToken), cancelToken);
-        }
-
-        private static Message Receive(MessageQueue queue, CancellationToken cancelToken)
-        {
-            var receiveAsyncResult = queue.BeginReceive();
-            WaitHandle.WaitAny(new[] { receiveAsyncResult.AsyncWaitHandle, cancelToken.WaitHandle });
-
-            Message message = null;
-
-            if (!cancelToken.IsCancellationRequested)
-            {
-                message = queue.EndReceive(receiveAsyncResult);
-            }
-
-            return message;
         }
     }
 }

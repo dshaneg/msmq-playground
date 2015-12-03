@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("msmqtest")]
+[assembly: AssemblyTitle("mon")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("GameStop, Inc.")]
-[assembly: AssemblyProduct("msmqtest")]
+[assembly: AssemblyProduct("mon")]
 [assembly: AssemblyCopyright("Copyright © GameStop, Inc. 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("40810a67-b6ea-492e-abcb-79884a073b59")]
+[assembly: Guid("45e9cba6-f87f-4d59-ad1e-1465d76fe31f")]
 
 // Version information for an assembly consists of the following four values:
 //
